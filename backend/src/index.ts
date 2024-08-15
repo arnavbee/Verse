@@ -12,6 +12,9 @@ const app = new Hono<{
 	}
 }>();
 
+app.route("/api/v1/user", userRouter);
+app.route("/api/v1/vlog", blogRouter);
+
 app.use('/api/v1/blog/*', async (c, next) => {
 
   const header = c.req.header("authorization") || "";
@@ -34,43 +37,70 @@ app.use('/api/v1/blog/*', async (c, next) => {
 
 
 app.post('/api/v1/user/signup', async (c) => {
+  const body = await c.req.json();
   const prisma = new PrismaClient({
-    datasourceUrl: c.env.DATABASE_URL,
-}).$extends(withAccelerate());
+		datasourceUrl: c.env?.DATABASE_URL	,
+	}).$extends(withAccelerate());
 
-   const body = await c.req.json();
+  try {
+    const user = await prisma.user.create({
+      data: {
+        email: body.email,
+        password: body.password,
+        name: body.name
+      }
+    })
 
-   const user = await prisma.user.create({
-    data: {
-      email: body.email,
-      password: body.password
-    },
-   })
+    const jwt = await sign({
+      id: user.id,
+    }, "c.env.JWT_SECRET")
 
-   const token = await sign({id: user.id}, "secret")
-  return c.json({jwt: token})
+    return c.text(jwt)}
+
+    catch(e) {
+      console.log(e);
+      c.status(411);
+      return c.text('Invalid')
+    }
 })
 
 
 app.post('/api/v1/signin', async (c) => {
-	const prisma = new PrismaClient({
+  const body = await c.req.json();
+  const prisma = new PrismaClient({
 		datasourceUrl: c.env?.DATABASE_URL	,
 	}).$extends(withAccelerate());
 
-	const body = await c.req.json();
-	const user = await prisma.user.findUnique({
-		where: {
-			email: body.email
-		}
-	});
+  try {
+    const user = await prisma.user.findFirst({
+      where: {
+        email: body.email,
+        password: body.password
+      }
+    })
 
-	if (!user) {
-		c.status(403);
-		return c.json({ error: "user not found" });
-	}
+    if(!user){
+      c.status(403);
+      return c.json({
+        message: "incorrect credentials"
+      })
+    }
 
-	const jwt = await sign({ id: user.id }, c.env.JWT_SECRET);
-	return c.json({ jwt });
+    const jwt = await sign({
+      id: user.id,
+      email: user.email
+    }, "c.env.JWT_SECRET")
+
+    return c.text(jwt)
+
+  } catch(e) {
+    console.log(e);
+    c.status(411);
+    return c.text('Invalid')
+  }
+
+	
+
 })
 
 
