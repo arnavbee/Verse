@@ -3,7 +3,7 @@ import { PrismaClient } from '@prisma/client/edge'
 import { withAccelerate } from '@prisma/extension-accelerate'
 import { sign, verify} from 'hono/jwt'
 import { Bindings } from "hono/types";
-import {signupInput} from "@arnavbsingh/verse-common";
+import {signupInput, SigninInput} from "@arnavbsingh/verse-common";
 
 
 export const userRouter = new Hono<{
@@ -77,6 +77,16 @@ userRouter.use('/api/v1/blog/*', async (c, next) => {
   
   userRouter.post('/api/v1/signin', async (c) => {
     const body = await c.req.json();
+
+    const {success} = SigninInput.safeParse(body);
+
+    if(!success) {
+      c.status(411);
+      return c.json({
+        message: "Inputs are not valid"
+      })
+    }
+
     const prisma = new PrismaClient({
           datasourceUrl: c.env?.DATABASE_URL	,
       }).$extends(withAccelerate());
