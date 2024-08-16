@@ -4,10 +4,11 @@ import { blogRouter } from './routes/blog';
 
 
 
+
 const app = new Hono<{
 	Bindings: {
-		DATABASE_URL: string,
-    JWT_SECRET: string,
+		DATABASE_URL: string;
+        JWT_SECRET: string;
 	}
 }>();
 

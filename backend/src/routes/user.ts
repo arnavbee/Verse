@@ -52,7 +52,7 @@ userRouter.use('/api/v1/blog/*', async (c, next) => {
   
       const jwt = await sign({
         id: user.id,
-      }, "c.env.JWT_SECRET")
+      }, c.env.JWT_SECRET)
   
       return c.text(jwt)}
   

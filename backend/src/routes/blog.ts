@@ -1,66 +1,81 @@
-import {Hono} from "hono";
-import { PrismaClient } from '@prisma/client/edge'
-import { withAccelerate } from '@prisma/extension-accelerate'
-import { sign, verify} from 'hono/jwt'
-import { Bindings } from "hono/types";
-
-
+import { Hono } from "hono";
+import { PrismaClient } from '@prisma/client/edge';
+import { withAccelerate } from '@prisma/extension-accelerate';
+import { verify } from 'hono/jwt';
 
 export const blogRouter = new Hono<{
-    Bindings:{
-        DATABASE_URL: string,
-        JWT_SECRET: string,
-
-    } ,
-
+    Bindings: {
+        DATABASE_URL: string;
+        JWT_SECRET: string;
+    };
     Variables: {
-        userId: string
-    }
+        userId: string;
+    };
 }>();
 
-
-blogRouter.use("/*", async (c,next) => {
-    // extract the user ID
-    // pass it down to the route handler
-    const authHeader = c.req.header("authorization") || "";
-    const user = await verify(authHeader, "c.env.JWT_SECRET");
-    if(user){
+blogRouter.use("/*", async (c, next) => {
+    try {
+      const authHeader = c.req.header("authorization") || "";
+      const token = authHeader.replace(/^Bearer\s/, "");
+      if (!token) {
+        c.status(401);
+        return c.json({ message: "Authorization header is missing!" });
+      }
+  
+      const jwtSecret = c.env.JWT_SECRET;
+      if (!jwtSecret) {
+        c.status(500);
+        return c.json({ message: "JWT_SECRET environment variable is not set!" });
+      }
+  
+      try {
+        const user = await verify(token, jwtSecret);
         c.set("userId", user.id as string);
         await next();
-    } else {
+      } catch (verifyError) {
+        console.error("Token verification failed:", verifyError);
         c.status(403);
-        return c.json({
-            message: "You are not logged in!"
-        })
+        return c.json({ message: "Invalid token!" });
+      }
+    } catch (e) {
+      console.error("Error during authentication:", e);
+      c.status(500);
+      return c.json({ message: "Internal Server Error" });
+    }
+  });
+
+blogRouter.post('/', async (c) => {
+    try {
+        const body = await c.req.json();
+        const authorId = c.get("userId");
+
+        if (!authorId) {
+            c.status(403); // Forbidden
+            return c.json({ message: "User ID not found!" });
+        }
+
+        const prisma = new PrismaClient({
+            datasourceUrl: c.env?.DATABASE_URL,
+        }).$extends(withAccelerate());
+
+        const blog = await prisma.blog.create({
+            data: {
+                title: body.title,
+                content: body.content,
+                authorId: Number(authorId) // Ensure authorId is a number
+            }
+        });
+
+        return c.json({ id: blog.id });
+    } catch (e) {
+        console.error("Error creating blog:", e);
+        c.status(500); // Internal Server Error
+        return c.json({ message: "Internal Server Error" });
     }
 });
 
 
-
-
-
-
-blogRouter.post('/', async (c) => {
-    const body = await c.req.json();
-    const authorId = c.get("userId");
-    const prisma = new PrismaClient({
-          datasourceUrl: c.env?.DATABASE_URL	,
-      }).$extends(withAccelerate());
-
-    const blog = await prisma.blog.create({
-        data: {
-            title: body.title,
-            content:body.content,
-            authorId: parseInt(authorId)
-        }
-    })
-
-
-    return c.json({
-        id: blog.id
-
-    })
-  })
+  
   
   blogRouter.put('/', async (c) => {
     const body = await c.req.json();
@@ -86,8 +101,8 @@ blogRouter.post('/', async (c) => {
     })
   })
   
-  blogRouter.get('/', async (c) => {
-    const body = await c.req.json();
+  blogRouter.get('/:id', async (c) => {
+    const id = c.req.param("id");
     const prisma = new PrismaClient({
           datasourceUrl: c.env?.DATABASE_URL	,
       }).$extends(withAccelerate());
@@ -95,7 +110,7 @@ blogRouter.post('/', async (c) => {
       try {
         const blog = await prisma.blog.findFirst({
             where: {
-                id: body.id,
+                id: Number(id),
             }
         })
 
