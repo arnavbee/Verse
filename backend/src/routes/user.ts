@@ -3,16 +3,7 @@ import { PrismaClient } from '@prisma/client/edge'
 import { withAccelerate } from '@prisma/extension-accelerate'
 import { sign, verify} from 'hono/jwt'
 import { Bindings } from "hono/types";
-import z from "zod";
-
-const signupInput = z.object({
-
-  username: z.string().email(),
-  password: z.string().min(6),
-  name: z.string().optional()
-
-
-})
+import {signupInput} from "@arnavbsingh/verse-common";
 
 
 export const userRouter = new Hono<{
