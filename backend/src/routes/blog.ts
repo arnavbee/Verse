@@ -112,7 +112,6 @@ blogRouter.post('/', async (c) => {
         blogs
     )
   })
-  
   blogRouter.get('/:id', async (c) => {
     const id = c.req.param("id");
     const prisma = new PrismaClient({
