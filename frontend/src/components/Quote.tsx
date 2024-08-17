@@ -7,7 +7,7 @@ export const Quote = () => {
         The support team went above and 
         beyond to address my concerns"
         </div>
-        <div className=" max-w-xl text-xl font-medium mt-2">
+        <div className=" max-w-xl text-xl font-medium mt-4">
          Justin Weinfield
         </div>
         <div className="max-w-xl	 text-sm font-light text-slate-400 mt-1">
