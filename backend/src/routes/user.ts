@@ -75,7 +75,7 @@ userRouter.use('/api/v1/blog/*', async (c, next) => {
   })
   
   
-  userRouter.post('/api/v1/signin', async (c) => {
+  userRouter.post('/signin', async (c) => {
     const body = await c.req.json();
 
     const {success} = SigninInput.safeParse(body);

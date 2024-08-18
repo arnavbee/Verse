@@ -15,7 +15,8 @@ export const Auth = ({type}: {type: "signup" | "signin"}) => {
 
     async function sendRequest(){
         try {
-            const response = await axios.post(`${BACKEND_URL}/api/v1/user/${type == "signup" ? "signup" : "signin"} `, postInputs);
+            const response = await axios.post(`${BACKEND_URL}/api/v1/user/${type == "signup" ? "signup" : "signin"}`, 
+                postInputs);
             const jwt = response.data;
             localStorage.setItem("token", jwt);
             navigate("/blogs");
@@ -26,7 +27,10 @@ export const Auth = ({type}: {type: "signup" | "signin"}) => {
          alert("Error while signing up!");
         }
 
+        console.log(postInputs);
+
     }
+
 
 
     return <div className="h-screen flex justify-center flex-col">
@@ -46,11 +50,11 @@ export const Auth = ({type}: {type: "signup" | "signin"}) => {
     
 
         <div className="pt-8">
-            <LabelledInput label="Username" placeholder="arnavbsingh..." onChange={(e) => {
+        
+        <LabelledInput label="Username" placeholder="arnavbsingh..." onChange={(e) => {
                 setPostInputs({
                     ...postInputs,
-                   
-                    username: e.target.value,
+                   username: e.target.value,
                 })
             }} />
 
