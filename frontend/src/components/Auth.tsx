@@ -1,14 +1,34 @@
 import { signupInput } from "@arnavbsingh/verse-common";
 import { ChangeEvent , useState} from "react";
-import {Link} from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
+import axios from "axios";
+import { BACKEND_URL } from "../config";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const Auth = ({type}: {type: "signup" | "signin"}) => {
+    const navigate = useNavigate();
     const [postInputs, setPostInputs] = useState<signupInput>({
         name: "",
         username: "",
         password:""
     });
+
+    async function sendRequest(){
+        try {
+            const response = await axios.post(`${BACKEND_URL}/api/v1/user/${type == "signup" ? "signup" : "signin"} `, postInputs);
+            const jwt = response.data;
+            localStorage.setItem("token", jwt);
+            navigate("/blogs");
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch(e) {
+         //empty block statement
+
+         alert("Error while signing up!");
+        }
+
+    }
+
+
     return <div className="h-screen flex justify-center flex-col">
         <div className="flex justify-center">
             <div>
@@ -31,9 +51,6 @@ export const Auth = ({type}: {type: "signup" | "signin"}) => {
                     ...postInputs,
                    
                     username: e.target.value,
-                   
-
-
                 })
             }} />
 
@@ -41,26 +58,18 @@ export const Auth = ({type}: {type: "signup" | "signin"}) => {
                 setPostInputs({
                     ...postInputs,
                     name: e.target.value,
-                    username: e.target.value,
-                    password: e.target.value
-
-
                 })
             }} /> : null}
-
-   
 
 
 <LabelledInput label="Password" placeholder="Password" type={"password"} onChange={(e) => {
                 setPostInputs({
                     ...postInputs,
                     password: e.target.value
-
-
                 })
             }} />
 
-           <button type="button" className=" mt-8 text-white w-full bg-gray-800 hover:bg-gray-900 focus:outline-none 
+           <button onClick={sendRequest} type="button" className=" mt-8 text-white w-full bg-gray-800 hover:bg-gray-900 focus:outline-none 
 focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800
  dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700">{type == "signup" ? "Sign Up" : "Sign In"}</button>
 
