@@ -18,10 +18,12 @@ export const Blogs = () => {
     <div>
         <Appbar/>
         <div className="flex justify-center">
-        <div className="max-w-xl">
-            {blogs.map((blog) =>  <BlogCard authorName={"Ish Verduzco"}
-        title={"Social media for startup founders: A practical guide to building an online presence"}
-        content={"People compare spending time on social media to satisfying a sweet tooth. But for most startup founders, building a social presence is a staple. The platforms we choose can help us research our audiences, drive organic growth, build brands, and get the word out — the argument for building out a social media strategy is pretty straightforward. Putting together an effective, realistic plan, on the other hand, is not."}
+        <div className="">
+            {blogs.map(blog =>  <BlogCard 
+        id={blog.id}
+        authorName={blog.author?.name || "Anonymous"} 
+        title={blog.title}
+        content={blog.content}
         publishedDate={"24 Feb 2024"}
 
         />)}

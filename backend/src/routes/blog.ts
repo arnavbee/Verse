@@ -137,9 +137,11 @@ blogRouter.post('/', async (c) => {
         }
     });
     
-    return c.json(
+    return c.json({
         blogs
-    )
+    })
+        
+    
   })
   blogRouter.get('/:id', async (c) => {
     const id = c.req.param("id");
