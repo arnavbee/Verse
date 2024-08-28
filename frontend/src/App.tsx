@@ -10,6 +10,11 @@ function App() {
 
   return (
     <>
+    <div>
+      <button>Sign Up</button>
+      <button>Sign In</button>
+    </div>
+    
       <BrowserRouter>
         <Routes>
           <Route path="/signup" element={<Signup />} />
