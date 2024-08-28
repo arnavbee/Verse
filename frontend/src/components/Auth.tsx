@@ -1,7 +1,6 @@
 import { signupInput } from "@arnavbsingh/verse-common";
 import { ChangeEvent, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
 import { BACKEND_URL } from "../config";
 
 export const Auth = ({ type }: { type: "signup" | "signin" }) => {
@@ -18,30 +17,37 @@ export const Auth = ({ type }: { type: "signup" | "signin" }) => {
         setError("");
         setIsLoading(true);
         try {
-            const url = `${BACKEND_URL}/api/v1/user/${type === "signup" ? "signup" : "signin"}`;
+            const url = `${BACKEND_URL}/api/v1/user/${type}`;
+            const body = JSON.stringify(postInputs);
             console.log("Sending request to:", url);
-            console.log("Request payload:", postInputs);
+            console.log("Request payload:", body);
 
-            const response = await axios.post(url, postInputs, {
+            const response = await fetch(url, {
+                method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
-                }
+                    'Content-Type': 'application/json',
+                },
+                body: body,
             });
 
-            console.log("Response:", response.data);
+            console.log("Response status:", response.status);
+            console.log("Response headers:", response.headers);
 
-            const jwt = response.data.token; // Adjust this based on your API response structure
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.log("Error response body:", errorText);
+                throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+            }
+
+            const data = await response.json();
+            console.log("Response data:", data);
+
+            const jwt = data.token; // Adjust this based on your API response structure
             localStorage.setItem("token", jwt);
             navigate("/blogs");
         } catch (e) {
             console.error("Full error object:", e);
-            
-            if (axios.isAxiosError(e)) {
-                console.error("Axios error details:", e.response?.data, e.response?.status, e.response?.headers);
-                setError(e.response?.data?.message || e.message || "An error occurred during the request. Please try again.");
-            } else {
-                setError("An unexpected error occurred. Please try again.");
-            }
+            setError((e as Error).message || "An unexpected error occurred. Please try again.");
         } finally {
             setIsLoading(false);
         }
@@ -109,22 +115,22 @@ interface LabelledInputType {
     placeholder: string;
     onChange: (e: ChangeEvent<HTMLInputElement>) => void;
     type?: string
-  }
-  
-  function LabelledInput({ label, placeholder, onChange, type }: LabelledInputType) {
+}
+
+function LabelledInput({ label, placeholder, onChange, type }: LabelledInputType) {
     return (
-      <div>
-        <label className="block mb-2 text-sm text-gray-900 font-semibold pt-4">{label}</label>
-        <input
-          onChange={onChange}
-          type={type || "text"}
-          id="first_name"
-          className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 "
-          placeholder={placeholder}
-          required
-        />
-      </div>
+        <div>
+            <label className="block mb-2 text-sm text-gray-900 font-semibold pt-4">{label}</label>
+            <input
+                onChange={onChange}
+                type={type || "text"}
+                id="first_name"
+                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 "
+                placeholder={placeholder}
+                required
+            />
+        </div>
     );
-  };
+}
 
 export default LabelledInput;
