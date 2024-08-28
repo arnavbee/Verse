@@ -18,7 +18,7 @@ export const Auth = ({ type }: { type: "signup" | "signin" }) => {
         setError("");
         setIsLoading(true);
         try {
-            const url = `${BACKEND_URL}/api/v1/user/${type === "signup" ? " " : "signin"}`;
+            const url = `${BACKEND_URL}/api/v1/user/${type === "signup" ? "signup" : "signin"}`;
             console.log("Sending request to:", url);
             console.log("Request payload:", postInputs);
 
@@ -57,7 +57,7 @@ export const Auth = ({ type }: { type: "signup" | "signin" }) => {
                         </div>
                         <div className="text-slate-400">
                             {type === "signin" ? "Don't have an account?" : "Already have an account?"}
-                            <Link className="pl-2 underline" to={type === "signin" ? "/" : "/signin"}>
+                            <Link className="pl-2 underline" to={type === "signin" ? "/signup" : "/signin"}>
                                 {type === "signin" ? "Sign Up" : "Sign In"}
                             </Link>
                         </div>
